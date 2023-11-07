@@ -8,8 +8,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.EditText
 import android.widget.Toast
+import androidx.core.widget.doOnTextChanged
 import edu.uw.ischool.zachaz.awty.databinding.ActivityMainBinding
 
 const val ALARM_ACTION = "edu.uw.ischool.zachaz.awty.ALARM"
@@ -28,18 +28,9 @@ class MainActivity : AppCompatActivity() {
         var minutes = binding.minutes.text.toString()
 
 
-        binding.phoneNumber.setOnEditorActionListener { it, _, event ->
-            phoneNumber = (it as EditText).text.toString()
-            event != null
-        }
-        binding.message.setOnEditorActionListener { it, _, event ->
-            message = (it as EditText).text.toString()
-            event != null
-        }
-        binding.minutes.setOnEditorActionListener { it, _, event ->
-            minutes = (it as EditText).text.toString()
-            event != null
-        }
+        binding.phoneNumber.doOnTextChanged { text, _, _, _ -> phoneNumber = text.toString() }
+        binding.message.doOnTextChanged { text, _, _, _ -> message = text.toString() }
+        binding.minutes.doOnTextChanged { text, _, _, _ -> minutes = text.toString() }
 
         val activityThis = this
 
@@ -47,7 +38,11 @@ class MainActivity : AppCompatActivity() {
             if (receiver == null) {
                 receiver = object : BroadcastReceiver() {
                     override fun onReceive(context: Context?, intent: Intent?) {
-                        Toast.makeText(activityThis, message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            activityThis,
+                            getString(R.string.display_message, phoneNumber, message),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
 
@@ -91,7 +86,10 @@ class MainActivity : AppCompatActivity() {
                     else -> stopMessage()
                 }
             } else {
-                Toast.makeText(this, "Please fill all the fields", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    R.string.please_fill_all_the_fields, Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
