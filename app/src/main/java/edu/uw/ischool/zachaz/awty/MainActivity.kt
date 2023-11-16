@@ -8,7 +8,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.telephony.SmsManager
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import edu.uw.ischool.zachaz.awty.databinding.ActivityMainBinding
 
@@ -23,6 +25,20 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.SEND_SMS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED -> { }
+            shouldShowRequestPermissionRationale(android.Manifest.permission.SEND_SMS) -> { }
+            else -> {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.SEND_SMS),
+                    1
+                )
+            }
+        }
+
         var message = binding.message.text.toString()
         var phoneNumber = binding.phoneNumber.text.toString()
         var minutes = binding.minutes.text.toString()
@@ -32,17 +48,19 @@ class MainActivity : AppCompatActivity() {
         binding.message.doOnTextChanged { text, _, _, _ -> message = text.toString() }
         binding.minutes.doOnTextChanged { text, _, _, _ -> minutes = text.toString() }
 
-        val activityThis = this
+        val smsManager = SmsManager.getDefault()
 
         fun sendMessage(): String {
             if (receiver == null) {
                 receiver = object : BroadcastReceiver() {
                     override fun onReceive(context: Context?, intent: Intent?) {
-                        Toast.makeText(
-                            activityThis,
-                            getString(R.string.display_message, phoneNumber, message),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        smsManager.sendTextMessage(
+                            phoneNumber,
+                            null,
+                            message,
+                            null,
+                            null
+                        )
                     }
                 }
 
